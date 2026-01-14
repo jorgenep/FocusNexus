@@ -1,0 +1,8 @@
+elijahjorgensen@pop-os:~/FocusNexus/src$ /usr/lib/jvm/java-11-openjdk-amd64/bin/javac /home/elijahjorgensen/FocusNexus/src/com/jihll/*.java
+elijahjorgensen@pop-os:~/FocusNexus/src$ /usr/lib/jvm/java-11-openjdk-amd64/bin/java -cp /home/elijahjorgensen/FocusNexus/src com.jihll.JIHLLLanguage
+JIHLL Interactive Shell (Type 'exit' to quit)
+------------------------------------------
+> print("Hi " + 4);
+Hi 4
+> exit
+elijahjorgensen@pop-os:~/FocusNexus/src$

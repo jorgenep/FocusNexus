@@ -5,8 +5,11 @@ enum TokenType {
     VAR, PRINT, IF, ELSE, WHILE, FUN, RETURN, CLASS, EXTENDS, THIS,
     TRUE, FALSE,
     
+    // Primitive Types
+    TYPE_INT, TYPE_DOUBLE, TYPE_BOOL, TYPE_STRING, TYPE_VOID,
+
     // Literals
-    IDENTIFIER, STRING, NUMBER,
+    IDENTIFIER, STRING, NUMBER_INT, NUMBER_DOUBLE,
     
     // Operators
     PLUS, MINUS, STAR, SLASH, EQUAL, EQUAL_EQUAL, 
@@ -14,7 +17,8 @@ enum TokenType {
     
     // Punctuation
     LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE, 
-    COMMA, DOT, SEMICOLON,
+    LEFT_BRACKET, RIGHT_BRACKET, // New: [ ] for Arrays
+    COMMA, DOT, SEMICOLON, COLON,
     
     EOF
 }

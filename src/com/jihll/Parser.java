@@ -20,7 +20,12 @@ class Parser {
     }
 
     private Stmt declaration() {
-        if (match(TokenType.VAR)) return varDeclaration();
+        // Match specific types OR 'var'
+        if (match(TokenType.TYPE_INT, TokenType.TYPE_DOUBLE, TokenType.TYPE_STRING, TokenType.TYPE_BOOL, TokenType.VAR)) {
+             // In a strictly typed language, you'd store this previous() token 
+             // to enforce types during compilation. For now, we consume it.
+            return varDeclaration();
+        }
         return statement();
     }
 
@@ -120,8 +125,27 @@ class Parser {
     }
 
     private Expr primary() {
-        if (match(TokenType.NUMBER, TokenType.STRING)) return new Expr.Literal(previous().literal);
+        if (match(TokenType.FALSE)) return new Expr.Literal(false);
+        if (match(TokenType.TRUE)) return new Expr.Literal(true);
+        
+        if (match(TokenType.NUMBER_INT, TokenType.NUMBER_DOUBLE, TokenType.STRING)) {
+            return new Expr.Literal(previous().literal);
+        }
+        
         if (match(TokenType.IDENTIFIER)) return new Expr.Variable(previous());
+        
+        // Array Literal Parsing: [ 1, 2, 3 ]
+        if (match(TokenType.LEFT_BRACKET)) {
+            List<Expr> elements = new ArrayList<>();
+            if (!check(TokenType.RIGHT_BRACKET)) {
+                do {
+                    elements.add(expression());
+                } while (match(TokenType.COMMA));
+            }
+            consume(TokenType.RIGHT_BRACKET, "Expect ']' after array elements.");
+            return new Expr.Array(elements);
+        }
+
         if (match(TokenType.LEFT_PAREN)) {
             Expr expr = expression();
             consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.");

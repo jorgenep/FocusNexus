@@ -25,6 +25,13 @@ class Lexer {
         keywords.put("return", TokenType.RETURN);
         keywords.put("class", TokenType.CLASS);
         keywords.put("this", TokenType.THIS);
+        
+        // New Type Keywords
+        keywords.put("int", TokenType.TYPE_INT);
+        keywords.put("double", TokenType.TYPE_DOUBLE);
+        keywords.put("bool", TokenType.TYPE_BOOL);
+        keywords.put("string", TokenType.TYPE_STRING);
+        keywords.put("void", TokenType.TYPE_VOID);
     }
 
     Lexer(String source) {
@@ -47,8 +54,11 @@ class Lexer {
             case ')': addToken(TokenType.RIGHT_PAREN); break;
             case '{': addToken(TokenType.LEFT_BRACE); break;
             case '}': addToken(TokenType.RIGHT_BRACE); break;
+            case '[': addToken(TokenType.LEFT_BRACKET); break; // Array start
+            case ']': addToken(TokenType.RIGHT_BRACKET); break; // Array end
             case ',': addToken(TokenType.COMMA); break;
             case '.': addToken(TokenType.DOT); break;
+            case ':': addToken(TokenType.COLON); break;
             case ';': addToken(TokenType.SEMICOLON); break;
             case '+': addToken(TokenType.PLUS); break;
             case '-': addToken(TokenType.MINUS); break;
@@ -83,11 +93,19 @@ class Lexer {
 
     private void number() {
         while (isDigit(peek())) advance();
+
+        // Look for a fractional part.
         if (peek() == '.' && isDigit(peekNext())) {
+            // Consume the "."
             advance();
             while (isDigit(peek())) advance();
+            
+            // It's a double
+            addToken(TokenType.NUMBER_DOUBLE, Double.parseDouble(source.substring(start, current)));
+        } else {
+            // It's an integer
+            addToken(TokenType.NUMBER_INT, Integer.parseInt(source.substring(start, current)));
         }
-        addToken(TokenType.NUMBER, Double.parseDouble(source.substring(start, current)));
     }
 
     private void string() {

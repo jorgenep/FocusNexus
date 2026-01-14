@@ -14,7 +14,14 @@ abstract class Stmt {
     static class Var extends Stmt {
         final Token name;
         final Expr initializer;
-        Var(Token name, Expr initializer) { this.name = name; this.initializer = initializer; }
+        final Token type; // This was the uninitialized variable
+
+        // Fix: We set 'this.type = null' to satisfy the compiler
+        Var(Token name, Expr initializer) { 
+            this.name = name; 
+            this.initializer = initializer; 
+            this.type = null; 
+        }
     }
     static class Block extends Stmt {
         final List<Stmt> statements;

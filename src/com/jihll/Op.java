@@ -18,4 +18,5 @@ class Op {
     static final int CALL = 14;
     static final int LESS = 15;
     static final int GREATER = 16;
+    static final int BUILD_LIST = 17; // New OpCode
 }

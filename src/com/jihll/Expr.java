@@ -26,4 +26,9 @@ abstract class Expr {
             this.callee = callee; this.arguments = arguments;
         }
     }
+    // New: Represents [1, 2, 3]
+    static class Array extends Expr {
+        final List<Expr> elements;
+        Array(List<Expr> elements) { this.elements = elements; }
+    }
 }

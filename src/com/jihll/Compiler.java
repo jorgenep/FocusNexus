@@ -25,7 +25,7 @@ class Compiler {
             if (var.initializer != null) {
                 compile(var.initializer);
             } else {
-                int idx = chunk.addConstant(0.0);
+                int idx = chunk.addConstant(0); // Default int 0
                 chunk.write(Op.CONSTANT); 
                 chunk.write(idx);
             }
@@ -35,32 +35,16 @@ class Compiler {
         } else if (stmt instanceof Stmt.If) {
             Stmt.If ifStmt = (Stmt.If) stmt;
             compile(ifStmt.condition);
-
-            // Write JUMP_IF_FALSE with a placeholder for the offset
             chunk.write(Op.JUMP_IF_FALSE);
-            int elseOffsetIndex = chunk.code.size();
-            chunk.write(0); // placeholder
-
-            // then-branch
+            chunk.write(0xff); 
+            int elseJump = chunk.code.size() - 1;
             compile(ifStmt.thenBranch);
-
-            // Write unconditional jump to skip else-branch
             chunk.write(Op.JUMP);
-            int endOffsetIndex = chunk.code.size();
-            chunk.write(0); // placeholder
-
-            // Patch the JUMP_IF_FALSE placeholder to point to the start of else-branch
-            int elseTarget = chunk.code.size();
-            // runtime: after reading the placeholder, ip will be placeholderIndex+1,
-            // so stored offset should be target - (placeholderIndex + 1)
-            chunk.code.set(elseOffsetIndex, elseTarget - (elseOffsetIndex + 1));
-
-            // else-branch
+            chunk.write(0xff);
+            int endJump = chunk.code.size() - 1;
+            chunk.code.set(elseJump, chunk.code.size() - 1 - elseJump);
             if (ifStmt.elseBranch != null) compile(ifStmt.elseBranch);
-
-            // Patch the JUMP placeholder to point to the end (after else-branch)
-            int endTarget = chunk.code.size();
-            chunk.code.set(endOffsetIndex, endTarget - (endOffsetIndex + 1));
+            chunk.code.set(endJump, chunk.code.size() - 1 - endJump);
         } else if (stmt instanceof Stmt.Block) {
              for (Stmt s : ((Stmt.Block) stmt).statements) compile(s);
         } else if (stmt instanceof Stmt.Expression) {
@@ -84,6 +68,14 @@ class Compiler {
             for (Expr arg : call.arguments) compile(arg);
             chunk.write(Op.CALL);
             chunk.write(call.arguments.size());
+        } else if (expr instanceof Expr.Array) {
+            // Compile Array: Push elements, then OpCode with count
+            Expr.Array array = (Expr.Array) expr;
+            for (Expr element : array.elements) {
+                compile(element);
+            }
+            chunk.write(Op.BUILD_LIST);
+            chunk.write(array.elements.size());
         } else if (expr instanceof Expr.Binary) {
             Expr.Binary binary = (Expr.Binary) expr;
             compile(binary.left);

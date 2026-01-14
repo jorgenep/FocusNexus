@@ -1,0 +1,40 @@
+# --- Compiled Java Class Files ---
+# Ignore all .class files anywhere in the project
+*.class
+
+# --- Java Packages ---
+# If you eventually package the app
+*.jar
+*.war
+*.ear
+*.nar
+
+# --- Logs & Temp Files ---
+*.log
+*.tmp
+temp/
+
+# --- Operating System Files ---
+# Mac
+.DS_Store
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# --- IDE Settings (Optional but Recommended) ---
+# VS Code
+.vscode/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+
+# --- Testing Files ---
+.test
