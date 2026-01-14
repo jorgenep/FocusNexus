@@ -1,0 +1,21 @@
+package com.jihll;
+
+class Op {
+    static final int RETURN = 0;
+    static final int CONSTANT = 1;
+    static final int ADD = 2;
+    static final int SUBTRACT = 3;
+    static final int MULTIPLY = 4;
+    static final int DIVIDE = 5;
+    static final int NEGATE = 6;
+    static final int PRINT = 7;
+    static final int POP = 8;
+    static final int DEFINE_GLOBAL = 9;
+    static final int GET_GLOBAL = 10;
+    static final int SET_GLOBAL = 11;
+    static final int JUMP_IF_FALSE = 12;
+    static final int JUMP = 13;
+    static final int CALL = 14;
+    static final int LESS = 15;
+    static final int GREATER = 16;
+}
