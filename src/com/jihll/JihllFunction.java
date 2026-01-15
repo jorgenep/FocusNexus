@@ -13,6 +13,5 @@ class JihllFunction {
         this.chunk = chunk;
     }
 
-    @Override
-    public String toString() { return "<fn " + name + ">"; }
+    @Override public String toString() { return "<fn " + name + ">"; }
 }

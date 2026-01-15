@@ -1,5 +1,4 @@
 package com.jihll;
-
 import java.util.List;
 
 abstract class Expr {
@@ -45,5 +44,20 @@ abstract class Expr {
     static class Spawn extends Expr {
         final Expr expression;
         Spawn(Expr expression) { this.expression = expression; }
+    }
+    static class Get extends Expr {
+        final Expr object;
+        final Token name;
+        Get(Expr object, Token name) { this.object = object; this.name = name; }
+    }
+    static class Set extends Expr {
+        final Expr object;
+        final Token name;
+        final Expr value;
+        Set(Expr object, Token name, Expr value) { this.object = object; this.name = name; this.value = value; }
+    }
+    static class This extends Expr {
+        final Token keyword;
+        This(Token keyword) { this.keyword = keyword; }
     }
 }

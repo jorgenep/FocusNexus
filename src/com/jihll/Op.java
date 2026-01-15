@@ -23,7 +23,12 @@ class Op {
     static final int SPAWN = 19;
     static final int BUILD_MAP = 20;
     static final int IMPORT = 21;
-    static final int LESS_EQUAL = 22;
-    static final int GREATER_EQUAL = 23;
-    static final int NOT_EQUAL = 24;
+    static final int GET_LOCAL = 22;
+    static final int SET_LOCAL = 23;
+    static final int CLASS = 24;
+    static final int GET_PROPERTY = 25;
+    static final int SET_PROPERTY = 26;
+    static final int METHOD = 27;
+    static final int TRY_ENTER = 28;
+    static final int TRY_EXIT = 29;
 }

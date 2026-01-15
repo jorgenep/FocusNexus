@@ -1,5 +1,4 @@
 package com.jihll;
-
 import java.util.List;
 
 abstract class Stmt {
@@ -11,11 +10,6 @@ abstract class Stmt {
         final Expr expression;
         Print(Expr expression) { this.expression = expression; }
     }
-    static class Return extends Stmt {
-        final Token keyword;
-        final Expr value;
-        Return(Token keyword, Expr value) { this.keyword = keyword; this.value = value; }
-    }
     static class Function extends Stmt {
         final Token name;
         final List<Token> params;
@@ -23,10 +17,6 @@ abstract class Stmt {
         Function(Token name, List<Token> params, List<Stmt> body) {
             this.name = name; this.params = params; this.body = body;
         }
-    }
-    static class Block extends Stmt {
-        final List<Stmt> statements;
-        Block(List<Stmt> statements) { this.statements = statements; }
     }
     static class If extends Stmt {
         final Expr condition;
@@ -41,9 +31,33 @@ abstract class Stmt {
         final Stmt body;
         While(Expr condition, Stmt body) { this.condition = condition; this.body = body; }
     }
+    static class Block extends Stmt {
+        final List<Stmt> statements;
+        Block(List<Stmt> statements) { this.statements = statements; }
+    }
+    static class Return extends Stmt {
+        final Token keyword;
+        final Expr value;
+        Return(Token keyword, Expr value) { this.keyword = keyword; this.value = value; }
+    }
     static class Import extends Stmt {
         final Token keyword;
         final Expr file;
         Import(Token keyword, Expr file) { this.keyword = keyword; this.file = file; }
+    }
+    static class Class extends Stmt {
+        final Token name;
+        final List<Stmt.Function> methods;
+        Class(Token name, List<Stmt.Function> methods) {
+            this.name = name; this.methods = methods;
+        }
+    }
+    static class Try extends Stmt {
+        final Stmt tryBlock;
+        final Stmt catchBlock;
+        final Token errorVar;
+        Try(Stmt tryBlock, Token errorVar, Stmt catchBlock) {
+            this.tryBlock = tryBlock; this.errorVar = errorVar; this.catchBlock = catchBlock;
+        }
     }
 }

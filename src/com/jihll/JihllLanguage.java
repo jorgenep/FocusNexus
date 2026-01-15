@@ -1,89 +1,84 @@
 package com.jihll;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.List;
-import java.util.Scanner;
+import java.nio.file.*;
+import java.util.*;
+import java.net.URI;
+import java.net.http.*;
 
 public class JihllLanguage {
     private static final VM vm = new VM();
 
     public static void main(String[] args) throws IOException {
-        // --- 1. SYSTEM ---
-        vm.defineNative("clock", (nArgs) -> (double) System.currentTimeMillis() / 1000.0);
-        vm.defineNative("print", (nArgs) -> { System.out.println(nArgs[0]); return null; });
-        vm.defineNative("input", (nArgs) -> new Scanner(System.in).nextLine());
-        vm.defineNative("sleep", (nArgs) -> {
-            try { Thread.sleep(((Double)nArgs[0]).longValue()); } catch(Exception e){} return null;
+        vm.defineNative("print", (a) -> { System.out.println(a[0]); return null; });
+        vm.defineNative("clock", (a) -> (double) System.currentTimeMillis() / 1000.0);
+        vm.defineNative("sleep", (a) -> { try{Thread.sleep(((Double)a[0]).longValue());}catch(Exception e){} return null; });
+        vm.defineNative("len", (a) -> {
+            if(a[0] instanceof String)return (double)((String)a[0]).length();
+            if(a[0] instanceof List)return (double)((List)a[0]).size();
+            return 0.0; 
         });
 
-        // --- 2. MATH & LISTS ---
-        vm.defineNative("sqrt", (nArgs) -> Math.sqrt((Double) nArgs[0]));
-        vm.defineNative("len", (nArgs) -> {
-            if (nArgs[0] instanceof String) return (double)((String)nArgs[0]).length();
-            if (nArgs[0] instanceof List) return (double)((List)nArgs[0]).size();
-            if (nArgs[0] instanceof java.util.Map) return (double)((java.util.Map)nArgs[0]).size();
-            return 0.0;
-        });
+        vm.defineNative("jsonParse", (a) -> JsonUtils.parse((String)a[0]));
+        vm.defineNative("jsonStringify", (a) -> JsonUtils.stringify(a[0]));
 
-        // --- 3. FILE I/O ---
-        // readFile("path.txt") -> String
-        vm.defineNative("readFile", (nArgs) -> {
-            try { return Files.readString(Paths.get(nArgs[0].toString())); } 
-            catch (IOException e) { return null; }
-        });
+        vm.defineNative("split", (a) -> Arrays.asList(((String)a[0]).split((String)a[1])));
+        vm.defineNative("replace", (a) -> ((String)a[0]).replace((String)a[1], (String)a[2]));
+        vm.defineNative("trim", (a) -> ((String)a[0]).trim());
 
-        // writeFile("path.txt", "content") -> boolean
-        vm.defineNative("writeFile", (nArgs) -> {
-            try { Files.writeString(Paths.get(nArgs[0].toString()), nArgs[1].toString()); return true; } 
-            catch (IOException e) { return false; }
-        });
-
-        // appendFile("path.txt", "content") -> boolean
-        vm.defineNative("appendFile", (nArgs) -> {
+        vm.defineNative("httpGet", (a) -> {
             try {
-                Files.write(Paths.get(nArgs[0].toString()), nArgs[1].toString().getBytes(), StandardOpenOption.APPEND);
-                return true;
-            } catch (IOException e) {
-                return false;
-            }
+                HttpClient client = HttpClient.newHttpClient();
+                HttpRequest req = HttpRequest.newBuilder().uri(URI.create(a[0].toString())).build();
+                return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+            } catch (Exception e) { return null; }
         });
 
-        // --- STARTUP ---
-        if (args.length == 1) {
-            runFile(args[0]);
-        } else {
-            runPrompt();
-        }
+        vm.defineNative("readFile", (a) -> { try{return Files.readString(Paths.get(a[0].toString()));}catch(IOException e){return null;} });
+        vm.defineNative("writeFile", (a) -> { try{Files.writeString(Paths.get(a[0].toString()), a[1].toString());return true;}catch(IOException e){return false;} });
+
+        if (args.length == 1) runFile(args[0]); else runPrompt();
     }
 
-    private static void runFile(String path) throws IOException {
-        String source = Files.readString(Paths.get(path));
-        run(source);
-    }
-
+    private static void runFile(String path) throws IOException { run(Files.readString(Paths.get(path))); }
     private static void runPrompt() {
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("JIHLL Shell (Type 'exit' to quit)");
-        while (true) {
-            System.out.print("> ");
-            if (!scanner.hasNextLine()) break;
-            String line = scanner.nextLine();
-            if (line.equals("exit")) break;
-            try { run(line); } catch (Exception e) { System.out.println("Error: " + e.getMessage()); }
-        }
+        Scanner s = new Scanner(System.in);
+        System.out.println("JillLanguage v2.0 (Stack VM)");
+        while(true) { System.out.print("> "); if(!s.hasNextLine())break; run(s.nextLine()); }
     }
-
     private static void run(String source) {
-        Lexer lexer = new Lexer(source);
-        List<Token> tokens = lexer.scanTokens();
-        Parser parser = new Parser(tokens);
-        List<Stmt> statements = parser.parse();
-        Chunk chunk = new Chunk();
-        Compiler compiler = new Compiler(chunk);
-        compiler.compile(statements);
-        vm.interpret(chunk);
+        new VM().interpret(new Compiler(new Chunk()).chunk); 
+        
+        Lexer l = new Lexer(source);
+        Parser p = new Parser(l.scanTokens());
+        Chunk c = new Chunk();
+        new Compiler(c).compile(p.parse());
+        vm.interpret(c);
+    }
+    
+    static class JsonUtils {
+        static Object parse(String json) {
+            json = json.trim();
+            if (json.startsWith("{")) return new HashMap<>();
+            if (json.startsWith("[")) return new ArrayList<>();
+            return json;
+        }
+        
+        static String stringify(Object obj) {
+            if (obj instanceof Map) {
+                StringBuilder sb = new StringBuilder("{");
+                Map<?,?> m = (Map<?,?>)obj;
+                int i=0;
+                for(Map.Entry<?,?> e : m.entrySet()) {
+                    if(i++ > 0) sb.append(", ");
+                    sb.append(e.getKey()).append(": ").append(stringify(e.getValue()));
+                }
+                return sb.append("}").toString();
+            }
+            if (obj instanceof List) {
+                return obj.toString();
+            }
+            return String.valueOf(obj);
+        }
     }
 }

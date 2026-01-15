@@ -18,8 +18,22 @@ class Parser {
     }
 
     private Stmt declaration() {
+        if (match(TokenType.CLASS)) return classDeclaration();
         if (match(TokenType.FUN)) return functionDeclaration();
         return statement();
+    }
+
+    private Stmt classDeclaration() {
+        Token name = consume(TokenType.IDENTIFIER, "Expect class name.");
+        consume(TokenType.COLON, "Expect ':' before class body.");
+        
+        List<Stmt.Function> methods = new ArrayList<>();
+        while (!check(TokenType.DOT) && !isAtEnd()) {
+            consume(TokenType.FUN, "Expect 'fun' in class body.");
+            methods.add((Stmt.Function) functionDeclaration());
+        }
+        consume(TokenType.DOT, "Expect '.' after class body.");
+        return new Stmt.Class(name, methods);
     }
 
     private Stmt functionDeclaration() {
@@ -37,19 +51,28 @@ class Parser {
 
     private Stmt statement() {
         if (match(TokenType.PRINT)) return printStatement();
+        if (match(TokenType.TRY)) return tryStatement();
         if (match(TokenType.IF)) return ifStatement();
         if (match(TokenType.WHILE)) return whileStatement();
         if (match(TokenType.RETURN)) return returnStatement();
         if (match(TokenType.IMPORT)) return importStatement();
-        
-        // Fix: Explicitly handle SPAWN as a statement start
         if (match(TokenType.SPAWN)) return spawnStatement();
-        
         return expressionStatement();
     }
     
+    private Stmt tryStatement() {
+        consume(TokenType.COLON, "Expect ':' after try.");
+        Stmt tryBlock = new Stmt.Block(parseBlock());
+        
+        consume(TokenType.CATCH, "Expect 'catch' after try block.");
+        Token errorVar = consume(TokenType.IDENTIFIER, "Expect error variable name.");
+        consume(TokenType.COLON, "Expect ':' after catch.");
+        Stmt catchBlock = new Stmt.Block(parseBlock());
+        
+        return new Stmt.Try(tryBlock, errorVar, catchBlock);
+    }
+    
     private Stmt spawnStatement() {
-        // "spawn worker(1)" -> parse "worker(1)" as expression
         Expr callExpr = expression(); 
         return new Stmt.Expression(new Expr.Spawn(callExpr));
     }
@@ -92,11 +115,8 @@ class Parser {
                 elseStmts.add(declaration());
             }
         }
-        
         consume(TokenType.DOT, "Expect '.' after if block.");
-
-        return new Stmt.If(condition, new Stmt.Block(thenStmts), 
-                           (elseStmts != null) ? new Stmt.Block(elseStmts) : null);
+        return new Stmt.If(condition, new Stmt.Block(thenStmts), (elseStmts != null) ? new Stmt.Block(elseStmts) : null);
     }
     
     private Stmt whileStatement() {
@@ -128,6 +148,9 @@ class Parser {
             Expr value = assignment();
             if (expr instanceof Expr.Variable) {
                 return new Expr.Assign(((Expr.Variable)expr).name, value);
+            } else if (expr instanceof Expr.Get) {
+                Expr.Get get = (Expr.Get)expr;
+                return new Expr.Set(get.object, get.name, value);
             }
             throw new RuntimeException("Invalid assignment target.");
         }
@@ -178,16 +201,22 @@ class Parser {
                 }
                 consume(TokenType.RIGHT_PAREN, "Expect ')' after arguments.");
                 expr = new Expr.Call(expr, args);
-            } else {
+            } 
+            else if (match(TokenType.DOT)) {
+                Token name = consume(TokenType.IDENTIFIER, "Expect property name after '.'.");
+                expr = new Expr.Get(expr, name);
+            }
+            else {
                 break;
             }
         }
         return expr;
     }
-
+    
     private Expr primary() {
         if (match(TokenType.FALSE)) return new Expr.Literal(false);
         if (match(TokenType.TRUE)) return new Expr.Literal(true);
+        if (match(TokenType.THIS)) return new Expr.This(previous());
         if (match(TokenType.NUMBER)) return new Expr.Literal(previous().literal);
         if (match(TokenType.STRING)) return new Expr.Literal(previous().literal);
         if (match(TokenType.IDENTIFIER)) return new Expr.Variable(previous());

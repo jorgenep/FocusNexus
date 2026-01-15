@@ -5,7 +5,8 @@ enum TokenType {
     IF, ELSE,
     WHILE, FOR, IN,
     FUN, RETURN, SPAWN,
-    IMPORT, // New Keyword
+    IMPORT, CLASS, THIS,
+    TRY, CATCH,
     TRUE, FALSE, 
     PRINT,
 
