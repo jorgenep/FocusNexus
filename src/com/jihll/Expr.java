@@ -3,6 +3,11 @@ package com.jihll;
 import java.util.List;
 
 abstract class Expr {
+    static class Assign extends Expr {
+        final Token name;
+        final Expr value;
+        Assign(Token name, Expr value) { this.name = name; this.value = value; }
+    }
     static class Binary extends Expr {
         final Expr left;
         final Token operator;
@@ -26,7 +31,6 @@ abstract class Expr {
             this.callee = callee; this.arguments = arguments;
         }
     }
-    // New: Represents [1, 2, 3]
     static class Array extends Expr {
         final List<Expr> elements;
         Array(List<Expr> elements) { this.elements = elements; }

@@ -11,16 +11,17 @@ abstract class Stmt {
         final Expr expression;
         Print(Expr expression) { this.expression = expression; }
     }
-    static class Var extends Stmt {
+    static class Return extends Stmt {
+        final Token keyword;
+        final Expr value;
+        Return(Token keyword, Expr value) { this.keyword = keyword; this.value = value; }
+    }
+    static class Function extends Stmt {
         final Token name;
-        final Expr initializer;
-        final Token type; // This was the uninitialized variable
-
-        // Fix: We set 'this.type = null' to satisfy the compiler
-        Var(Token name, Expr initializer) { 
-            this.name = name; 
-            this.initializer = initializer; 
-            this.type = null; 
+        final List<Token> params;
+        final List<Stmt> body;
+        Function(Token name, List<Token> params, List<Stmt> body) {
+            this.name = name; this.params = params; this.body = body;
         }
     }
     static class Block extends Stmt {
@@ -34,5 +35,10 @@ abstract class Stmt {
         If(Expr condition, Stmt thenBranch, Stmt elseBranch) {
             this.condition = condition; this.thenBranch = thenBranch; this.elseBranch = elseBranch;
         }
+    }
+    static class While extends Stmt {
+        final Expr condition;
+        final Stmt body;
+        While(Expr condition, Stmt body) { this.condition = condition; this.body = body; }
     }
 }

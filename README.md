@@ -1,4 +1,4 @@
-# 🔮 JIHLL
+# 🔮 JIHLL (Java Interpreted High-Level Language)
 
 > **A modern, robust interpreted programming language built simply and efficiently.**
 
@@ -10,7 +10,7 @@
 
 ## ✨ Overview
 
-**JIHLL** (Just Another Interpreted High-Level Language) is a dynamically typed, feature-rich scripting language running on the Java Virtual Machine. Designed for clarity and ease of implementation, it offers a powerful set of tools for developers looking to explore language design or simply script efficiently.
+**JIHLL** (Java Interpreted High-Level Language) is a dynamically typed, feature-rich scripting language running on the Java Virtual Machine. Designed for clarity and ease of implementation, it offers a powerful set of tools for developers looking to explore language design or simply script efficiently.
 
 The implementation includes a handwritten **Scanner**, **Recursive Descent Parser**, and a **Virtual Machine** (VM) for execution.
 
